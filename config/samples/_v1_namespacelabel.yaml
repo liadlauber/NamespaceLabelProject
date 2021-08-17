@@ -1,0 +1,7 @@
+apiVersion: dana.io/v1
+kind: NamespaceLabel
+metadata:
+  name: namespacelabel-sample
+spec:
+  # Add fields here
+  foo: bar
