@@ -3,5 +3,13 @@ kind: NamespaceLabel
 metadata:
   name: namespacelabel-sample
 spec:
-  # Add fields here
-  foo: bar
+  labels:
+    dana.hns.io/role: leaf
+    dana.hns.io/subnamespace: 'true'
+    dana.hns.io/aggragator-shira: 'true'
+    dana.hns.io/aggragator-zuriel: 'true'
+    dana.hns.io/parent: lidor
+    dana.hns.io/aggragator-lidor: 'true'
+    dana.hns.io/resourcepool: 'true'
+    dana.hns.io/aggragator-raz: 'true'
+    dana.hns.io/aggragator-demo: 'true'

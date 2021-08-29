@@ -1,12 +1,9 @@
 /*
 Copyright 2021.
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
     http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,25 +14,34 @@ limitations under the License.
 package controllers
 
 import (
+	danaiov1 "NamespaceLabel/api/v1"
 	"context"
+	"github.com/go-logr/logr"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/event"
 
+	//"k8s.io/apimachinery/pkg/api/errors"
+	//"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
-
-	danaiov1 "NamespaceLabel/api/v1"
+	//"k8s.io/client-go/tools/cache"
 )
+
+type Set map[string]string
 
 // NamespaceLabelReconciler reconciles a NamespaceLabel object
 type NamespaceLabelReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Log       logr.Logger
+	Scheme    *runtime.Scheme
+	NslEvents chan event.GenericEvent
 }
 
-//+kubebuilder:rbac:groups=dana.io,resources=namespacelabels,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=dana.io,resources=namespacelabels/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=dana.io,resources=namespacelabels/finalizers,verbs=update
+//+kubebuilder:rbac:groups=core,resources=namespacelabels,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=namespacelabels/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=core,resources=namespacelabels/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -46,11 +52,13 @@ type NamespaceLabelReconciler struct {
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.8.3/pkg/reconcile
+
 func (r *NamespaceLabelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
-
-	// your logic here
-
+	r.NslEvents <- event.GenericEvent{Object: &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: req.Namespace,
+		},
+	}}
 	return ctrl.Result{}, nil
 }
 

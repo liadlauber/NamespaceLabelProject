@@ -12,4 +12,8 @@ resources:
   kind: NamespaceLabel
   path: NamespaceLabel/api/v1
   version: v1
+- controller: true
+  domain: dana.io
+  kind: Namespace
+  version: v1
 version: "3"
