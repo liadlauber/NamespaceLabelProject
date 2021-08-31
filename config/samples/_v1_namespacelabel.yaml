@@ -2,6 +2,7 @@ apiVersion: dana.io/v1
 kind: NamespaceLabel
 metadata:
   name: namespacelabel-sample
+  namespace: labertest
 spec:
   labels:
     dana.hns.io/role: leaf

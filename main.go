@@ -19,6 +19,7 @@ package main
 import (
 	"flag"
 	"os"
+
 	"sigs.k8s.io/controller-runtime/pkg/event"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
@@ -95,6 +96,10 @@ func main() {
 		NslEvents: nslEvents,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Namespace")
+		os.Exit(1)
+	}
+	if err = (&danaiov1.NamespaceLabel{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "NamespaceLabel")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder

@@ -40,9 +40,9 @@ type NamespaceReconciler struct {
 	NslEvents chan event.GenericEvent
 }
 
-//+kubebuilder:rbac:groups=dana.io,resources=namespaces,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=dana.io,resources=namespaces/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=dana.io,resources=namespaces/finalizers,verbs=update
+//+kubebuilder:rbac:groups=core,resources=namespaces,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=namespaces/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=core,resources=namespaces/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -58,7 +58,6 @@ func (r *NamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	l := log.FromContext(ctx)
 
 	type Set map[string]string
-	//
 	var ns corev1.Namespace
 	var labels map[string]string
 	var nsll danaiov1.NamespaceLabelList

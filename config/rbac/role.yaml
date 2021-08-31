@@ -9,32 +9,6 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - namespacelabels
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - namespacelabels/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - ""
-  resources:
-  - namespacelabels/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - dana.io
-  resources:
   - namespaces
   verbs:
   - create
@@ -45,15 +19,41 @@ rules:
   - update
   - watch
 - apiGroups:
-  - dana.io
+  - ""
   resources:
   - namespaces/finalizers
   verbs:
   - update
 - apiGroups:
-  - dana.io
+  - ""
   resources:
   - namespaces/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - dana.io
+  resources:
+  - namespacelabels
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - dana.io
+  resources:
+  - namespacelabels/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - dana.io
+  resources:
+  - namespacelabels/status
   verbs:
   - get
   - patch
