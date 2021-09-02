@@ -18,17 +18,17 @@ package main
 
 import (
 	"flag"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"os"
-
 	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	"k8s.io/apimachinery/pkg/runtime"
-	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -45,9 +45,10 @@ var (
 )
 
 func init() {
-	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-
-	utilruntime.Must(danaiov1.AddToScheme(scheme))
+	_ = clientgoscheme.AddToScheme(scheme)
+	_ = danaiov1.AddToScheme(scheme)
+	//utilruntime.Must(clientgoscheme.AddToScheme(scheme))
+	//utilruntime.Must(danaiov1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -98,10 +99,10 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Namespace")
 		os.Exit(1)
 	}
-	if err = (&danaiov1.NamespaceLabel{}).SetupWebhookWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create webhook", "webhook", "NamespaceLabel")
-		os.Exit(1)
-	}
+	//if err = (&danaiov1.NamespaceLabel{}).SetupWebhookWithManager(mgr); err != nil {
+	//	setupLog.Error(err, "unable to create webhook", "webhook", "NamespaceLabel")
+	//	os.Exit(1)
+	//}
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
@@ -112,6 +113,17 @@ func main() {
 		setupLog.Error(err, "unable to set up ready check")
 		os.Exit(1)
 	}
+
+	setupLog.Info("setting up webhook server")
+	hookServer := mgr.GetWebhookServer()
+
+	decoder, _ := admission.NewDecoder(scheme)
+	setupLog.Info("Registering namespacelabel webhook to the webhook server")
+	hookServer.Register("/validate-dana-io-v1-namespacelabel", &webhook.Admission{Handler: &danaiov1.NamespacelabelAnnotator{
+		Client:  mgr.GetClient(),
+		Decoder: decoder,
+		Log:     setupLog,
+	}})
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {

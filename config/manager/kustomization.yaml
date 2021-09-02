@@ -13,4 +13,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: liad6500/namespacelabel
-  newTag: v1
+  newTag: v2

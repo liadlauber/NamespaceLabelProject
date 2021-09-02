@@ -17,14 +17,24 @@ limitations under the License.
 package v1
 
 import (
+	"context"
+	"github.com/go-logr/logr"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	ctrl "sigs.k8s.io/controller-runtime"
+	"net/http"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
+
+type NamespacelabelAnnotator struct {
+	Client  client.Client
+	Decoder *admission.Decoder
+	Log     logr.Logger
+}
 
 type Set map[string]string
 
@@ -49,19 +59,36 @@ func AreLabelsInBlackList(labels Set, blacklist []string) bool {
 	return false
 }
 
-// log is for logging in this package.
-var namespacelabellog = logf.Log.WithName("namespacelabel-resource")
+func (a *NamespacelabelAnnotator) Handle(ctx context.Context, req admission.Request) admission.Response {
+	log := a.Log.WithValues("webhook", "Namespacelabel webhook", "Name", req.Name)
+	nsl := NamespaceLabel{}
+	log.Info("webhook request received")
 
-func (r *NamespaceLabel) SetupWebhookWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewWebhookManagedBy(mgr).
-		For(r).
-		Complete()
+	if err := a.Decoder.Decode(req, &nsl); err != nil {
+		log.Error(err, "could not decode route object")
+		return admission.Errored(http.StatusBadRequest, err)
+	}
+
+	if AreLabelsInBlackList(nsl.Spec.Labels, blacklist) {
+		return admission.Denied("label is in blacklist")
+	} else {
+		return admission.Allowed("the best")
+	}
+
+	//return admission.Allowed("allowMessageValidateNamespacelabel")
 }
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
+//func (r *NamespaceLabel) SetupWebhookWithManager(mgr ctrl.Manager) error {
+//	return ctrl.NewWebhookManagedBy(mgr).
+//		For(r).
+//		Complete()
+//}
 
-// TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
 //+kubebuilder:webhook:path=/validate-dana-io-v1-namespacelabel,mutating=false,failurePolicy=fail,sideEffects=None,groups=dana.io,resources=namespacelabels,verbs=create;update,versions=v1,name=vnamespacelabel.kb.io,admissionReviewVersions={v1,v1beta1}
+
+// log is for logging in this package.
+
+var namespacelabellog = logf.Log.WithName("namespacelabel-resource")
 
 var _ webhook.Validator = &NamespaceLabel{}
 
